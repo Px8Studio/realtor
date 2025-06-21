@@ -1,6 +1,26 @@
-# Getting Started with Create React App
+# Your Realtor App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern real estate application built with React, Firebase, and Tailwind CSS.
+
+## Features
+
+- User authentication and profiles
+- Property listing creation and management
+- Image upload and gallery
+- Interactive maps with Leaflet
+- Responsive design
+- Real-time updates
+
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up your Firebase project and update `.env.local`
+4. Run the development server: `npm start`
+
+## Configuration
+
+Update `src/config/appConfig.js` with your branding and settings.
 
 ## Available Scripts
 
