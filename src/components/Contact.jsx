@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 import { db } from "../firebase";
+import { sanitizeInput, sanitizeForUrl, validateTextLength } from "../utils/security";
 
 export default function Contact({ userRef, listing }) {
   const [landlord, setLandlord] = useState(null);
@@ -18,9 +19,28 @@ export default function Contact({ userRef, listing }) {
       }
     }
     getLandlord();
-  }, [userRef]);
-  function onChange(e) {
-    setMessage(e.target.value);
+  }, [userRef]);  function onChange(e) {
+    // Sanitize input and validate length
+    const sanitized = sanitizeInput(e.target.value);
+    if (!validateTextLength(sanitized, 500)) {
+      toast.error("Message too long. Maximum 500 characters allowed.");
+      return;
+    }
+    setMessage(sanitized);
+  }
+  
+  // Send email with sanitized content
+  function handleSendEmail() {
+    if (!message.trim()) {
+      toast.error("Please enter a message");
+      return;
+    }
+    
+    const subject = sanitizeForUrl(listing.name);
+    const body = sanitizeForUrl(message);
+    const emailUrl = `mailto:${landlord.email}?Subject=${subject}&body=${body}`;
+    
+    window.location.href = emailUrl;
   }
   return (
     <>
@@ -37,15 +57,13 @@ export default function Contact({ userRef, listing }) {
               value={message}
               onChange={onChange}
               className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600"
-            ></textarea>
-          </div>
-          <a
-            href={`mailto:${landlord.email}?Subject=${listing.name}&body=${message}`}
+            ></textarea>          </div>          <button
+            onClick={handleSendEmail}
+            className="px-7 py-3 bg-blue-600 text-white rounded text-sm uppercase shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out w-full text-center mb-6"
+            type="button"
           >
-            <button className="px-7 py-3 bg-blue-600 text-white rounded text-sm uppercase shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out w-full text-center mb-6" type="button">
-              Send Message
-            </button>
-          </a>
+            Send Message
+          </button>
         </div>
       )}
     </>
