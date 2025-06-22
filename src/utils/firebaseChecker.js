@@ -1,6 +1,6 @@
 // Firebase Configuration Checker
 import { db } from '../firebase';
-import { collection, getDocs, limit, query } from 'firebase/firestore';
+import { collection, getDocs, limit, query, orderBy } from 'firebase/firestore';
 
 export const checkFirebaseConnection = async () => {
   const results = {
@@ -96,6 +96,33 @@ export const logFirebaseStatus = async () => {
     console.log('2. Verify Firestore Rules are deployed');
     console.log('3. Create required indexes (see Firebase rules.txt)');
     console.log('4. Ensure billing is enabled for your Firebase project');
+  }
+  
+  // Check Firestore indexes
+  const indexTests = [
+    { name: 'User listings index', collection: 'listings', field: 'userRef' },
+    { name: 'Type listings index', collection: 'listings', field: 'type' },
+    { name: 'Offer listings index', collection: 'listings', field: 'offer' }
+  ];
+  
+  for (const test of indexTests) {
+    try {
+      // These will fail if indexes don't exist
+      const q = query(
+        collection(db, test.collection),
+        orderBy('timestamp', 'desc'),
+        limit(1)
+      );
+      await getDocs(q);
+      console.log(`✅ ${test.name}: OK`);
+    } catch (error) {
+      if (error.code === 'failed-precondition') {
+        console.log(`❌ ${test.name}: MISSING INDEX`);
+        console.log(`   Create index at: https://console.firebase.google.com/project/${process.env.REACT_APP_FIREBASE_PROJECT_ID}/firestore/indexes`);
+      } else {
+        console.log(`⚠️  ${test.name}: ${error.message}`);
+      }
+    }
   }
   
   return status.connection;

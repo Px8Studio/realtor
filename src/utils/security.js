@@ -1,24 +1,33 @@
-// Security utilities
-export const sanitizeInput = (input) => {
+// Input sanitization utilities
+export function sanitizeInput(input) {
   if (typeof input !== 'string') return '';
   
-  // Remove potentially dangerous characters and scripts
   return input
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/javascript:/gi, '')
-    .replace(/on\w+\s*=/gi, '')
-    .trim();
-};
+    .trim()
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+    .replace(/javascript:/gi, '') // Remove javascript: protocols
+    .replace(/on\w+\s*=/gi, ''); // Remove event handlers
+}
 
-export const validateEmail = (email) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
+export function sanitizeForUrl(input) {
+  return encodeURIComponent(sanitizeInput(input));
+}
 
-export const validateTextLength = (text, maxLength = 1000) => {
+export function validateTextLength(text, maxLength) {
   return text && text.length <= maxLength;
-};
+}
 
-export const sanitizeForUrl = (text) => {
-  return encodeURIComponent(sanitizeInput(text));
-};
+export function validateImageFile(file) {
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  const maxSize = 2 * 1024 * 1024; // 2MB
+  
+  if (!allowedTypes.includes(file.type)) {
+    return { valid: false, error: 'Only JPEG, PNG, and WebP images are allowed.' };
+  }
+  
+  if (file.size > maxSize) {
+    return { valid: false, error: 'Image must be smaller than 2MB.' };
+  }
+  
+  return { valid: true };
+}

@@ -1,65 +1,85 @@
-# Your Realtor App
+# Hoodly Realtor App 🏠
 
 A modern real estate application built with React, Firebase, and Tailwind CSS.
 
-## Features
+## 🚀 Features
 
-- User authentication and profiles
-- Property listing creation and management
-- Image upload and gallery
-- Interactive maps with Leaflet
-- Responsive design
-- Real-time updates
+- **User Authentication** - Sign up, sign in, forgot password, Google OAuth
+- **Property Listings** - Create, edit, delete property listings
+- **Image Upload** - Multiple image upload with Firebase Storage
+- **Interactive Maps** - Property location with Leaflet maps
+- **Real-time Data** - Live updates with Firestore
+- **Responsive Design** - Mobile-first design with Tailwind CSS
+- **Search & Filter** - Find properties by type, location, and features
 
-## Getting Started
+## 🛠️ Tech Stack
 
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Set up your Firebase project and update `.env.local`
-4. Run the development server: `npm start`
+- **Frontend**: React 18, React Router 6, Tailwind CSS
+- **Backend**: Firebase (Auth, Firestore, Storage)
+- **Maps**: React Leaflet
+- **Build Tool**: Create React App
+- **Styling**: Tailwind CSS with forms plugin
 
-## Configuration
+## 📦 Installation
 
-Update `src/config/appConfig.js` with your branding and settings.
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd realtor
+   ```
 
-## Available Scripts
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-In the project directory, you can run:
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   Fill in your Firebase and Google Maps API credentials.
 
-### `npm start`
+4. **Start development server**
+   ```bash
+   npm start
+   ```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 🔧 Configuration
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Firebase Setup
 
-### `npm test`
+1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
+2. Enable Authentication (Email/Password + Google)
+3. Create Firestore database
+4. Set up Storage bucket
+5. **IMPORTANT**: Create these Firestore indexes:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```javascript
+// Required indexes - your app won't work without these!
+// Index 1: User listings (Collection: listings, Fields: userRef ASC, timestamp DESC)
+// Index 2: Type listings (Collection: listings, Fields: type ASC, timestamp DESC)  
+// Index 3: Offer listings (Collection: listings, Fields: offer ASC, timestamp DESC)
+```
 
-### `npm run build`
+### Google Maps API
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. Get API key from [Google Cloud Console](https://console.cloud.google.com)
+2. Enable Geocoding API
+3. Add to `.env.local` as `REACT_APP_GEOCODE_API_KEY`
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🏗️ Project Structure
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```
+src
+├── components      # Reusable components
+├── config          # Configuration files
+├── hooks           # Custom React hooks
+├── pages           # Page components
+├── styles          # Global styles and Tailwind CSS setup
+└── utils           # Utility functions
+```
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
+## 📚 Learn More
 
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 

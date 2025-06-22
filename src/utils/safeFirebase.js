@@ -27,23 +27,21 @@ export const safeFirebaseOperation = async (operation, errorMessage = 'Firebase 
   }
 };
 
-export const isFirebaseReady = () => {
+export function isFirebaseReady() {
   return db !== null && db !== undefined;
-};
+}
 
-export const getFirebaseError = (error) => {
-  if (!db) {
-    return 'Firebase not initialized';
-  }
+export function getFirebaseErrorMessage(error) {
+  const errorMessages = {
+    'auth/user-not-found': 'No user found with this email address.',
+    'auth/wrong-password': 'Incorrect password.',
+    'auth/email-already-in-use': 'An account with this email already exists.',
+    'auth/weak-password': 'Password should be at least 6 characters.',
+    'auth/invalid-email': 'Invalid email address.',
+    'permission-denied': 'You do not have permission to perform this action.',
+    'not-found': 'The requested document was not found.',
+    'failed-precondition': 'Missing database index. Check console for details.',
+  };
   
-  switch (error.code) {
-    case 'permission-denied':
-      return 'Access denied - please sign in';
-    case 'failed-precondition':
-      return 'Database configuration incomplete';
-    case 'unavailable':
-      return 'Database temporarily unavailable';
-    default:
-      return error.message || 'Unknown error occurred';
-  }
-};
+  return errorMessages[error.code] || error.message || 'An unexpected error occurred.';
+}
