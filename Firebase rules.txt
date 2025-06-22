@@ -1,5 +1,4 @@
-
-    // Firestore rules
+// Firestore rules
 
 
 rules_version = '2';
@@ -38,6 +37,51 @@ service firebase.storage {
     }
   }
 }
+
+// REQUIRED FIRESTORE INDEXES - CRITICAL FOR APP FUNCTIONALITY
+// 
+// ⚠️  CREATE ALL 3 INDEXES IMMEDIATELY - APP WILL NOT WORK WITHOUT THEM ⚠️
+//
+// INDEX 1: Profile Page - User Listings Query
+// Collection: listings
+// Fields: userRef (Ascending), timestamp (Descending), __name__ (Descending)
+// Purpose: Display user's own listings on profile page
+// Link: https://console.firebase.google.com/v1/r/project/hoodly-realtor/firestore/indexes?create_composite=Ck9wcm9qZWN0cy9ob29kbHktcmVhbHRvci9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvbGlzdGluZ3MvaW5kZXhlcy9fEAEaCwoHdXNlclJlZhABGg0KCXRpbWVzdGFtcBACGgwKCF9fbmFtZV9fEAI
+//
+// INDEX 2: Home Page - Type-based Listings Query  
+// Collection: listings
+// Fields: type (Ascending), timestamp (Descending), __name__ (Descending)
+// Purpose: Display listings by type (rent/sale) on home page
+// Link: https://console.firebase.google.com/v1/r/project/hoodly-realtor/firestore/indexes?create_composite=Ck9wcm9qZWN0cy9ob29kbHktcmVhbHRvci9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvbGlzdGluZ3MvaW5kZXhlcy9fEAEaCAoEdHlwZRABGg0KCXRpbWVzdGFtcBACGgwKCF9fbmFtZV9fEAI
+//
+// INDEX 3: Home Page - Offer-based Listings Query
+// Collection: listings  
+// Fields: offer (Ascending), timestamp (Descending), __name__ (Descending)
+// Purpose: Display listings with offers/discounts on home page
+// Link: https://console.firebase.google.com/v1/r/project/hoodly-realtor/firestore/indexes?create_composite=Ck9wcm9qZWN0cy9ob29kbHktcmVhbHRvci9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvbGlzdGluZ3MvaW5kZXhlcy9fEAEaCQoFb2ZmZXIQARoNCgl0aW1lc3RhbXAQAhoMCghfX25hbWVfXxAC
+//
+// INSTRUCTIONS:
+// 1. Click each link above to auto-create the index
+// 2. OR manually create them in Firebase Console > Firestore > Indexes
+// 3. Wait 5-10 minutes for indexes to build
+// 4. Refresh your app and errors should be gone
+//
+// STORAGE CORS TROUBLESHOOTING:
+// If you're getting CORS errors with image uploads:
+// 1. Ensure the storage rules above are deployed
+// 2. Check that your Firebase project has billing enabled
+// 3. Verify the storage bucket exists: hoodly-realtor.appspot.com
+// 4. Try temporarily using permissive storage rules for testing:
+//
+// TEMPORARY STORAGE RULES FOR DEBUGGING (USE ONLY FOR TESTING):
+// rules_version = '2';
+// service firebase.storage {
+//   match /b/{bucket}/o {
+//     match /{allPaths=**} {
+//       allow read, write;
+//     }
+//   }
+// }
 
 
 
