@@ -1,7 +1,8 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+import { getFirestore, enableNetwork, connectFirestoreEmulator } from "firebase/firestore";
 import { getAuth } from 'firebase/auth';
+import { getStorage } from 'firebase/storage';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -15,23 +16,14 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
-// Validate configuration
+// Validate Firebase configuration
 const validateConfig = () => {
-  const required = [
-    'REACT_APP_FIREBASE_API_KEY',
-    'REACT_APP_FIREBASE_AUTH_DOMAIN', 
-    'REACT_APP_FIREBASE_PROJECT_ID',
-    'REACT_APP_FIREBASE_STORAGE_BUCKET',
-    'REACT_APP_FIREBASE_MESSAGING_SENDER_ID',
-    'REACT_APP_FIREBASE_APP_ID'
-  ];
-  
-  const missing = required.filter(key => !process.env[key]);
-  
-  if (missing.length > 0) {
-    console.error('❌ Missing Firebase environment variables:', missing);
-    console.error('Please check your .env.local file');
-    return false;
+  const requiredFields = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
+  for (const field of requiredFields) {
+    if (!firebaseConfig[field]) {
+      console.error(`❌ Missing Firebase config: ${field}`);
+      return false;
+    }
   }
   
   console.log('✅ Firebase configuration validated');
@@ -41,11 +33,15 @@ const validateConfig = () => {
 // Initialize Firebase only if config is valid
 let app;
 let db;
+let auth;
+let storage;
 
 try {
   if (validateConfig()) {
     app = initializeApp(firebaseConfig);
     db = getFirestore(app);
+    auth = getAuth(app);
+    storage = getStorage(app);
     
     console.log('🔥 Firebase initialized successfully');
     console.log('📊 Project:', firebaseConfig.projectId);
@@ -60,11 +56,44 @@ try {
   }
 } catch (error) {
   console.error('❌ Firebase initialization failed:', error);
-  // Create a dummy db object to prevent app crashes
+  // Create dummy objects to prevent app crashes
   db = null;
+  auth = null;
+  storage = null;
 }
 
-// Initialize Firebase Authentication and get a reference to the service
-export const auth = getAuth(app);
+// Force enable network and disable emulator for production
+if (process.env.NODE_ENV === 'production') {
+  enableNetwork(db).catch(console.error);
+}
 
-export { db };
+// Make sure we're not accidentally connecting to emulator
+if (process.env.REACT_APP_USE_FIREBASE_EMULATOR === 'true') {
+  console.warn('🚨 Using Firebase Emulator - this should only be for testing!');
+} else {
+  console.log('🌐 Using production Firebase');
+}
+
+// Initialize Firestore with explicit region configuration
+const initializeFirestore = async () => {
+  try {
+    if (db) {
+      console.log('🇳🇱 Initializing Firebase for Netherlands/Europe region...');
+      console.log('📍 Database region: europe-west4 (Netherlands)');
+      console.log('🎯 Project ID:', firebaseConfig.projectId);
+      
+      // Force enable network for Europe region
+      await enableNetwork(db);
+      console.log('✅ Firestore network enabled for Europe region');
+    }
+    return true;
+  } catch (error) {
+    console.error('❌ Firestore initialization failed:', error);
+    return false;
+  }
+};
+
+// Initialize immediately
+initializeFirestore();
+
+export { db, auth, storage };
