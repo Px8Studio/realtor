@@ -14,30 +14,54 @@ import CreateListing from "./pages/CreateListing";
 import EditListing from "./pages/EditListing";
 import Listing from "./pages/Listing";
 import Category from "./pages/Category";
-import FirebaseLoader from "./components/FirebaseLoader";
-import { logFirebaseStatus } from "./utils/firebaseChecker";
-import { isFirebaseReady } from "./utils/safeFirebase";
+import { optimizeFirestoreConnection, suppressFirebaseWarnings } from './utils/firebaseOptimization';
+import FirebaseErrorMonitor from './components/FirebaseErrorMonitor';
+import FirebaseDiagnostics from './utils/firebaseDiagnostics';
+import { setupFirestoreDatabase, checkDatabaseRegion, checkFirestoreConnection, verifyDatabaseRegion } from './utils/firestoreSetup';
 
 function App() {
   const [firebaseReady, setFirebaseReady] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [firebaseError, setFirebaseError] = useState(null);
+  
+  useEffect(() => {
+    // Initialize Firebase optimizations
+    optimizeFirestoreConnection();
+    suppressFirebaseWarnings();
+  }, []);
 
   useEffect(() => {
     const checkFirebase = async () => {
       // Check Firebase configuration on app start
       try {
-        if (process.env.NODE_ENV === 'development') {
-          const success = await logFirebaseStatus();
-          setFirebaseReady(success);
-        } else {
-          // In production, just check if Firebase is ready
-          setFirebaseReady(isFirebaseReady());
+        console.group('🔥 Firebase Health Check (europe-west4)');
+        
+        // Step 1: Verify region configuration
+        console.log('🌍 Step 1: Verifying region configuration...');
+        await verifyDatabaseRegion();
+        
+        // Step 2: Test Firestore connection
+        console.log('🔧 Step 2: Testing Firestore connection...');
+        const connectionResult = await checkFirestoreConnection();
+        
+        if (!connectionResult.success) {
+          console.error('❌ Firestore connection failed');
+          setFirebaseError(`Firestore Error: ${connectionResult.error}`);
+          return;
         }
+        
+        console.log('✅ All Firebase checks passed!');
+        setFirebaseError(null);
+        setFirebaseReady(true);
+        
       } catch (error) {
-        console.error('Firebase check failed:', error);
-        setFirebaseReady(false);
+        console.error('❌ Firebase health check failed:', error);
+        setFirebaseError(`Firebase Error: ${error.message}`);
       } finally {
+        console.groupEnd();
         setChecking(false);
+        setLoading(false);
       }
     };
 
@@ -45,12 +69,19 @@ function App() {
   }, []);
 
   // Show loading screen while checking Firebase
-  if (checking) {
-    return <FirebaseLoader message="Initializing application..." />;
+  if (checking || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Initializing Firebase...</p>
+        </div>
+      </div>
+    );
   }
 
   // Show error screen if Firebase failed to initialize
-  if (!firebaseReady) {
+  if (!firebaseReady || firebaseError) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-red-50">
         <div className="text-center max-w-md mx-auto p-6">
@@ -122,6 +153,9 @@ function App() {
         pauseOnHover
         theme="dark"
       />
+      
+      {/* Add Firebase Error Monitor */}
+      {process.env.NODE_ENV === 'development' && <FirebaseErrorMonitor />}
     </>
   );
 }
